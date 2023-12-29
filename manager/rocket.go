@@ -2,17 +2,16 @@ package manager
 
 import (
 	"encoding/json"
-	"launcher/helpers"
 	"launcher/models"
 	"launcher/utils"
 	"log"
 )
 
 type RocketManager struct {
-	rockets []models.Rocket
+	Rockets []models.Rocket
 }
 
-func NewRocketMAnager() *RocketManager {
+func NewRocketManager() *RocketManager {
 	return &RocketManager{}
 }
 
@@ -32,15 +31,15 @@ func (r *RocketManager) Init() *RocketManager {
 
 	log.Println("Rocket count", len(rockets))
 
-	r.rockets = rockets
+	r.Rockets = rockets
 
 	return r
 
 }
 
-func (r *RocketManager) ConnectRockets(eventHelper *helpers.Event) {
-	for _, rocket := range r.rockets {
-		tcpUtil := utils.NewTCPUtil(rocket.Telemetry.Host, rocket.Telemetry.Port, eventHelper)
-		go tcpUtil.Connect()
-	}
-}
+// func (r *RocketManager) ConnectRockets(eventHelper *helpers.Event) {
+// 	for _, rocket := range r.rockets {
+// 		tcpUtil := utils.NewTCPUtil(rocket.Telemetry.Host, rocket.Telemetry.Port, eventHelper)
+// 		go tcpUtil.Connect()
+// 	}
+// }

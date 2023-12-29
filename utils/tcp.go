@@ -2,34 +2,36 @@ package utils
 
 import (
 	"fmt"
-	"launcher/helpers"
+	"launcher/models"
 	"log"
 	"net"
 )
 
 type TCP struct {
-	host         string
-	port         int64
-	eventManager *helpers.Event
-	decoder      *Decoder
+	host    string
+	port    int64
+	decoder *Decoder
 }
 
-func NewTCPUtil(host string, port int64, eventManager *helpers.Event) *TCP {
+func NewTCPUtil(host string, port int64) *TCP {
 	return &TCP{
-		host:         host,
-		port:         port,
-		eventManager: eventManager,
-		decoder:      NewDecoderUtil(),
+		host:    host,
+		port:    port,
+		decoder: NewDecoderUtil(),
 	}
 }
 
-func (t TCP) Connect() {
+func (t TCP) Connect(dataReceived func(rocket *models.Rocket)) {
 	address := fmt.Sprintf("%s:%d", t.host, t.port)
 	conn, err := net.Dial("tcp", address)
 	if err != nil {
 		log.Fatalln("Error while connection... :", err)
 		return
 	}
+
+	log.Printf("Socket connected to %s", address)
+
+	defer conn.Close()
 
 	buffer := make([]byte, 1024)
 
@@ -38,13 +40,16 @@ func (t TCP) Connect() {
 		_, err := conn.Read(buffer)
 		if err != nil {
 			log.Fatalln("Error while reading data:", err)
-			return
+			break
 		}
 
-		rocketID := t.decoder.RocketData(buffer)
+		rocketData := t.decoder.RocketData(buffer)
 
-		// Process and use the data (here, we'll just print it)
-		t.eventManager.Trigger(helpers.DataReceived, map[string]any{"name": rocketID})
+		if rocketData == nil {
+			continue
+		}
+
+		dataReceived(rocketData)
 	}
 
 }

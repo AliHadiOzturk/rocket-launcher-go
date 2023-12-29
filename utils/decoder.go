@@ -4,6 +4,8 @@ import (
 	"encoding/binary"
 	"launcher/models"
 	"math"
+
+	"github.com/sigurn/crc16"
 )
 
 type Decoder struct{}
@@ -23,11 +25,15 @@ func (d *Decoder) RocketData(data []byte) *models.Rocket {
 
 	// TODO: Implement crc check
 
-	// crc := binary.BigEndian.Uint16(data[33:35])
+	crc := binary.BigEndian.Uint16(data[33:35])
 
-	// if crc != 0 {
+	table := crc16.MakeTable(crc16.CRC16_BUYPASS)
 
-	// }
+	checksum := crc16.Checksum(data[:33], table)
+
+	if crc != checksum {
+		return nil
+	}
 
 	rocket := models.Rocket{
 		ID:           rocketID,
@@ -39,5 +45,4 @@ func (d *Decoder) RocketData(data []byte) *models.Rocket {
 	}
 
 	return &rocket
-
 }
